@@ -260,4 +260,136 @@ int pick_a_number()
 	printf("will win the jackpot of 100 credits!\n\n");
 	winning_number=(rand() % 20) + 1;	//Pick a number between 1 and 20.
 	if(player.credits < 10)
+	{
+		printf("You only have %d credits. That's not enough to play!\n\n",player.credits);
+		return -1;			//Not enough credits to play
+	}
+	player.credits -= 10;			//Deduct 10 credits
+	printf("10 credits have been deducted from your account.\n");
+	printf("Pick a number between 1 and 20: ");
+	scanf("%d",&pick);
 
+	printf("The winning number is %d\n",winning_number);
+	if(pick == winning_number)
+	{
+		jackpot();
+	}
+	else
+	{
+		printf("Sorry,you didn't win.\n");
+	}
+
+	return 0;
+}
+
+//This is the No Match Dealer game.
+//It returns -1 if the player has 0 credits
+int dealer_no_match()
+{
+	int i;
+	int j;
+	int number[16];
+	int wager=-1;
+	int match=-1;
+
+	printf("\n::::::::::::::::::: No Match Dealer :::::::::::::::\n");
+	printf("In this game,you can wager up to all of your credits.\n");
+	printf("The dealer will deal out 16 random numbers between 0 and 99.\n");
+	printf("If there are no matches among them,you double your money!\n\n");
+
+	if(player.credits == 0)
+	{
+		printf("You don't have any credits to wager!\n\n");
+		return -1;
+	}
+	while(wager == -1)
+	{
+		wager=take_wager(player.credits,0);
+	}
+	printf("\t\t::: Dealer out 16 random numbers :::\n");
+	for(i=0;i<16;i++)
+	{
+		numbers[i]=rand()%100;		//Pick a number between 0 and 99
+		printf("%2d\t",numbers[i]);	
+		if(i%8 == 7)			//Print a line break every 8 numbers
+		{
+			printf("\n");
+		}
+	}
+	for(i=0;i<15;i++)			//Loop looking for matches
+	{
+		j=i+1;
+		while(j<16)
+		{
+			if(numbers[i] == numbers[j])
+			{
+				match=numbers[i];
+			}
+			j++;
+		}
+	}
+	if(match != -1)
+	{
+		printf("The dealer matched the number %d!\n",match);
+		printf("You lose %d credits.\n",wager);
+		player.credits -= wager;
+	}
+	else
+	{
+		printf("There were no matches!You win %d credits!\n",wager);
+		player.credits += wager;
+	}
+
+	return 0;
+}
+
+//This is the Find the Ace game
+//It returns -1 if the player has 0 credits.
+int find_the_ace()
+{
+	int i;
+	int ace;
+	int total_wager;
+	int invalid_choice;
+	int pick=-1;
+	int wager_one=-1;
+	int wager_two=-1;
+	char choice_two;
+	char cards[3]={'X','X','X'};
+
+	ace=rand()%3;	//Place the ace randomly.
+
+	printf("************* Find the Ace *********************\n");
+	printf("In this game,you can wager up to all of your credits.\n");
+	printf("Three cards will be dealt out,two queens and one ace.\n");
+	printf("If you find the ace,you will win your wager.\n");
+	printf("After choosing a card,one of the queens will be revealed.\n");
+	printf("At this point,you may either select a different card or\n");
+	printf("increase your wager.\n\n");
+
+	if(player.credits == 0)
+	{
+		printf("You don't have any credits to wager!\n\n");
+		return -1;
+	}
+
+	while(wager_one == -1)		//Loop until valid wager is made.
+	{
+		wager_one=take_wager(player.credits,0);
+	}
+
+	print_cards("Dealing cards",cards,-1);
+	pick=-1;
+	while((pick < 1) || (pick > 3))	//Loop until valid pick is made.
+	{
+		printf("Select a card:1,2,or 3 ");
+		scanf("%d",&pick);
+	}
+	pick--;				//Adjust the pick since card numbering starts at 0.
+	i=0;
+	while(i == ace || i == pick)	//Keep looping until we find a valid queen to reveal
+	{
+		i++;
+	}
+	cards[i]='Q';
+	print_cards("Revealing a queen",cards,pick);
