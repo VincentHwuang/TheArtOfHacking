@@ -146,3 +146,118 @@ void show_highscore()
 	}
 	printf("==========================================================================\n\n");
 }
+
+//This function simply awards the jackpot for the Pick a Number game
+void jackpot()
+{
+	printf("*+*+*+*+*+*+*+* JACKPOT *+*+*+*+*+*+*+*+*");
+	printf("You have won the jackpot of 100 credits!\n");
+	player.credits += 100;
+}
+
+//This function prints the 3 cards for the Find the Ace game.
+//It expects a message to display,a pointer to the cards array,
+//-1,then the selection numbers are displayed.
+void print_cards(char *message,char* cards,int user_pick)
+{
+	int i;
+
+	printf("\n\t*** %s ***\n",message);
+	printf("	\t._.\t._.\t._.\n");
+	printf("Cards:\t|%c|\t|%c|\t|%c|\n\t",cards[0],cards[1],cards[2]);
+	if(user_pick == -1)
+	{
+		printf(" 1 \t 2 \t 3 \n");
+	}
+	else
+	{
+		for(i=0;i < user_pick;i++)
+		{
+			printf("\t");
+		}
+		printf(" ^-- your pick\n");
+	}
+}
+
+//This function inputs wagers for both the No Match Dealer and
+//Find the Ace games. It expects the available credits and the
+//previous wager as arguments. The previous_wager is only important
+//for the second wager in the Find the Ace game.The function
+//returns -1 if the wager is too big or too little, and it returns
+//the wager amount otherwise.
+int take_wager(int available_credits,int previous_wager)
+{
+	int wager;
+	int total_wager;
+
+	printf("How many of your %d credits would you like to wager? ",available_wager);
+	scanf("%d",&wager);
+
+	if(wager < 1)	//Make sure the wager is greater than 0.
+	{
+		printf("Nice try,but you must wager a positive number!\n");
+		return -1;
+	}
+	total_wager=previous_wager+wager;
+	if(total_wager > available_wager)	//Confirm available credits
+	{
+		printf("Your total wager of %d is more than you have!\n",total_wager);
+		printf("You only have %d available credits,try again.\n",available_wager);
+		return -1;
+	}
+
+	return wager;
+}
+
+//This function contains a loop to allow the current game to be
+//played again.It also writes the new credit totals to file
+//after each game is played.
+void play_the_game()
+{
+	int play_again=1;
+	int (*game)();
+	char selection;
+
+	while(play_again)
+	{
+		printf("\n[DEBUG] current_game pointer @ 0x%08x\n",player.current_game);
+		if(player.current_game() != -1)	//If the game plays without error and a new high score is set
+		{
+			if(player.credits > player.highscore)
+			{
+				player.highscore=player.credits;	//Update the highscore
+			}
+			printf("\nYou now have %u credits\n",player.credits);
+			update_player_data();	//Write the new credit total to file.
+			printf("Would you like to play again?(y/n) ");
+			selection='\n';
+			while(selection == '\n')//Flush any extra newlines.
+			{
+				scanf("%c",&selection);
+			}
+			if(selection == 'n')
+			{
+				play_again=0;
+			}
+		}
+		else			//This means the game returned an error,
+		{
+			play_again=0;	//so return to main menu.
+		}
+	}
+}
+
+//This function is the Pick a Number game
+//It returns -1 if the player doesn't have enough credits.
+int pick_a_number()
+{
+	int pick;
+	int winning_number;
+
+	printf("\n########################### Pick a Number ####################\n");
+	printf("This game costs 10 credits to play.Simply pick a number\n");
+	printf("between 1 and 20, and if you pick the winning number,you\n");
+	printf("will win the jackpot of 100 credits!\n\n");
+	winning_number=(rand() % 20) + 1;	//Pick a number between 1 and 20.
+	if(player.credits < 10)
+
