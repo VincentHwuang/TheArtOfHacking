@@ -19,7 +19,7 @@ int get_player_data()
 	}
 
 	read_bytes=read(file_descriptor,&entry,sizeof(struct user));	//Read the first chunk
-	while(entry.user_id ! current_user_id && read_bytes > 0)	//Loop until proper user is found
+	while(entry.user_id != current_user_id && read_bytes > 0)	//Loop until proper user is found
 	{
 		read_bytes=read(file_descriptor,&entry,sizeof(struct user));
 	}
@@ -163,7 +163,7 @@ void print_cards(char *message,char* cards,int user_pick)
 	int i;
 
 	printf("\n\t*** %s ***\n",message);
-	printf("	\t._.\t._.\t._.\n");
+	printf("      \t._.\t._.\t._.\n");
 	printf("Cards:\t|%c|\t|%c|\t|%c|\n\t",cards[0],cards[1],cards[2]);
 	if(user_pick == -1)
 	{
@@ -190,7 +190,7 @@ int take_wager(int available_credits,int previous_wager)
 	int wager;
 	int total_wager;
 
-	printf("How many of your %d credits would you like to wager? ",available_wager);
+	printf("How many of your %d credits would you like to wager? ",available_credits);
 	scanf("%d",&wager);
 
 	if(wager < 1)	//Make sure the wager is greater than 0.
@@ -199,10 +199,10 @@ int take_wager(int available_credits,int previous_wager)
 		return -1;
 	}
 	total_wager=previous_wager+wager;
-	if(total_wager > available_wager)	//Confirm available credits
+	if(total_wager > available_credits)//Confirm available credits
 	{
 		printf("Your total wager of %d is more than you have!\n",total_wager);
-		printf("You only have %d available credits,try again.\n",available_wager);
+		printf("You only have %d available credits,try again.\n",available_credits);
 		return -1;
 	}
 
@@ -309,8 +309,8 @@ int dealer_no_match()
 	printf("\t\t::: Dealer out 16 random numbers :::\n");
 	for(i=0;i<16;i++)
 	{
-		numbers[i]=rand()%100;		//Pick a number between 0 and 99
-		printf("%2d\t",numbers[i]);	
+		number[i]=rand()%100;		//Pick a number between 0 and 99
+		printf("%2d\t",number[i]);	
 		if(i%8 == 7)			//Print a line break every 8 numbers
 		{
 			printf("\n");
@@ -321,9 +321,9 @@ int dealer_no_match()
 		j=i+1;
 		while(j<16)
 		{
-			if(numbers[i] == numbers[j])
+			if(number[i] == number[j])
 			{
-				match=numbers[i];
+				match=number[i];
 			}
 			j++;
 		}
@@ -393,3 +393,69 @@ int find_the_ace()
 	}
 	cards[i]='Q';
 	print_cards("Revealing a queen",cards,pick);
+	invalid_choice=1;
+	while(invalid_choice)		//Loop until valid choice is made.
+	{
+		printf("Would you like to:\n[c]hange your pick\tor\t[i]ncrease your wage?\n");
+		printf("Select c or i: ");
+		choice_two='\n';
+		while(choice_two == '\n') 	//Flush extra newlines
+		{
+			scanf("%c",&choice_two);
+		}
+		if(choice_two == 'i')	 	//Increase wager
+		{
+			invalid_choice=0;	//This is a valid choice.
+			while(wager_two == -1)	//Loop until valid second wager is made
+			{
+				wager_two = take_wager(player.credits,wager_one);
+			}
+		}
+		if(choice_two == 'c')		//Change pick
+		{
+			i=invalid_choice=0;	//Valid choice.
+			while(i == pick || cards[i] == 'Q')	//Loop until the other card is found
+			{
+				i++;
+			}
+			pick=i;			//and then swap pick
+			printf("Your card pick has been changed to card %d\n",pick+1);
+		}
+	}
+
+	for(i=0;i<3;i++)			//Reveal all of the cards
+	{
+		if(ace == i)
+		{
+			cards[i]='A';
+		}
+		else
+		{
+			cards[i]='Q';
+		}
+	}
+	print_cards("End result",cards,pick);
+
+	if(pick == ace)				//Handle win
+	{
+		printf("You have won %d credits from your first wager\n",wager_one);
+		player.credits += wager_one;
+		if(wager_two != -1)
+		{
+			printf("and an additional %d credits from your second wager!\n",wager_two);
+			player.credits += wager_two;
+		}
+	}
+	else					//Handle loss
+	{
+		printf("You have lost %d credits from your first wager\n",wager_one);
+		player.credits -= wager_one;
+		if(wager_two != -1)
+		{
+			printf("and an additional %d credits from your second wager!\n",wager_two);
+			player.credits -= wager_two;
+		}
+	}
+
+	return 0;
+}
