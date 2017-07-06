@@ -102,7 +102,7 @@ void input_name()
 		scanf("%c",&input_char);//Newline chars
 	}
 
-	name_ptr=(char*)&(player.name);	//name_ptr=player name's address
+	name_ptr=(char*)(player.name);	//name_ptr=player name's address
 	while(input_char != '\n')	//Loop until newline
 	{
 		*name_ptr=input_char;	//Put the input char into name field
